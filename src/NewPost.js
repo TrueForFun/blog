@@ -1,30 +1,25 @@
 import React from "react";
-import { useContext, useState } from "react";
-import DataContext from "./context/DataContext";
 import { useHistory } from "react-router-dom";
-import api from "./api/posts";
+import { useStoreState, useStoreActions } from "easy-peasy";
 import { format } from "date-fns";
 
 const NewPost = () => {
   const history = useHistory();
-  const { posts, setPosts } = useContext(DataContext);
-  const [postTitle, setPostTitle] = useState("");
-  const [postBody, setPostBody] = useState("");
+  const posts = useStoreState((state) => state.posts);
+  const postTitle = useStoreState((state) => state.postTitle);
+  const postBody = useStoreState((state) => state.postBody);
+
+  const savePost = useStoreActions((actions) => actions.savePost);
+  const setPostTitle = useStoreActions((actions) => actions.setPostTitle);
+  const setPostBody = useStoreActions((actions) => actions.setPostBody);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const id = posts.length ? posts[posts.length - 1].id + 1 : 1;
     const datetime = format(new Date(), "MMMM dd, yyyy pp");
-    const NewPost = { id, title: postTitle, datetime, body: postBody };
-    try {
-      const response = await api.post("/posts", NewPost);
-      const allPosts = [...posts, response.data];
-      setPosts(allPosts);
-      setPostTitle("");
-      setPostBody("");
-      history.push("/");
-    } catch (err) {
-      console.log(`Erroe: ${err.message}`);
-    }
+    const newPost = { id, title: postTitle, datetime, body: postBody };
+    savePost(newPost);
+    history.push("/");
   };
 
   return (
